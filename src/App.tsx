@@ -241,13 +241,17 @@ const Link = () => {
         stroke="blue"
       />
       <path
-        d="M 0,0 Q 50 0, 50 75"
+        // d="M 0,0 Q 50 0, 50 75"
+        d={`M 0,0 Q ${svg.width / 2} 0, ${svg.width / 2} ${svg.height / 2}`}
         fill="none"
         strokeWidth="4"
         stroke="black"
       />
       <path
-        d="M 50,75 Q 50 150, 100 150"
+        // d="M 50,75 Q 50 150, 100 150"
+        d={`M ${svg.width / 2},${svg.height / 2} Q ${svg.width / 2} ${
+          svg.height
+        }, ${svg.width} ${svg.height}`}
         fill="none"
         strokeWidth="4"
         stroke="black"
