@@ -1,6 +1,7 @@
 import React from "react";
 
 type NodeState = {
+  uuid: number;
   name: string;
   x: number;
   y: number;
@@ -8,8 +9,8 @@ type NodeState = {
 };
 
 type LinkState = {
-  x: number;
-  y: number;
+  in: number;
+  out: number;
   isDrag: boolean;
 };
 
@@ -35,10 +36,12 @@ type Params = {
 };
 
 const nodes: NodeState[] = [
-  { name: "Node 1", x: 100, y: 100, isDrag: false },
-  { name: "Node 2", x: 300, y: 250, isDrag: false },
-  { name: "Node 3", x: 150, y: 400, isDrag: false },
+  { uuid: 1, name: "Node 1", x: 100, y: 100, isDrag: false },
+  { uuid: 2, name: "Node 2", x: 300, y: 250, isDrag: false },
+  { uuid: 3, name: "Node 3", x: 150, y: 400, isDrag: false },
 ];
+
+const links: LinkState[] = [{ out: 0, in: 1, isDrag: false }];
 
 const initialState: State = {
   el: null,
@@ -51,7 +54,7 @@ const initialState: State = {
   translateY: 0,
   scale: 1,
   nodes: nodes,
-  links: [],
+  links: links,
 };
 
 // const initialNodeState: NodeProps = {
@@ -215,15 +218,22 @@ const Node = ({ node, update }: NodeProps) => {
 
 // <path d="M 5,10 L 10 40 L 40 30" fill="none" stroke="grey"></path>
 
-const Link = () => {
-  const node1 = { x: 100, y: 100, width: 100, height: 100 };
-  const node2 = { x: 300, y: 250, width: 100, height: 100 };
+type LinkProps = {
+  nodeIn: NodeState;
+  nodeOut: NodeState;
+};
+
+const Link = ({ nodeIn, nodeOut }: LinkProps) => {
+  const nodeOutWidth = 100;
+  const nodeOutHeight = 100;
+  const nodeInWidth = 100;
+  const nodeInHeight = 100;
   // prettier-ignore
   const svg = {
-    x: node1.x + node1.width,
-    y: node1.y + node1.height / 2,
-    width: node2.x - (node1.x + node1.width),
-    height: (node2.height / 2 + node2.y) - (node1.y + node1.height / 2),
+    x: nodeOut.x + nodeOutWidth,
+    y: nodeOut.y + nodeOutHeight / 2,
+    width: nodeIn.x - (nodeOut.x + nodeOutWidth),
+    height: (nodeInHeight / 2 + nodeIn.y) - (nodeOut.y + nodeOutHeight / 2),
   };
   return (
     <svg
@@ -235,7 +245,10 @@ const Link = () => {
       height={svg.height}
     >
       <path
-        d="M 0,4 L 50 4 L 50 146 L 100 146"
+        // d="M 0,4 L 50 4 L 50 146 L 100 146"
+        d={`M 0,4 L ${svg.width / 2} 4 L ${svg.width / 2} ${svg.height} L ${
+          svg.width
+        } ${svg.height} `}
         fill="none"
         strokeWidth="2"
         stroke="blue"
@@ -293,7 +306,13 @@ const App = () => {
             }
           />
         ))}
-        <Link />
+        {state.links.map((link, i) => (
+          <Link
+            key={i}
+            nodeIn={state.nodes[link.in]}
+            nodeOut={state.nodes[link.out]}
+          />
+        ))}
       </div>
     </div>
   );
