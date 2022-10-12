@@ -1,4 +1,6 @@
 import React from "react";
+import PolylineIcon from "@mui/icons-material/Polyline";
+import LinkIcon from "@mui/icons-material/PolylineOutlined";
 
 type NodeState = {
   uuid: number;
@@ -246,7 +248,7 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
     >
       <path
         // d="M 0,4 L 50 4 L 50 146 L 100 146"
-        d={`M 0,4 L ${svg.width / 2} 4 L ${svg.width / 2} ${svg.height} L ${
+        d={`M 0,4 L ${svg.width * 0.2} 4 L ${svg.width * 0.8} ${svg.height} L ${
           svg.width
         } ${svg.height} `}
         fill="none"
@@ -256,6 +258,7 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
       <path
         // d="M 0,0 Q 50 0, 50 75"
         d={`M 0,0 Q ${svg.width / 2} 0, ${svg.width / 2} ${svg.height / 2}`}
+        // d={`M 0,0 Q ${svg.width * 0.2} 0, ${svg.width * 0.8} ${svg.height / 2}`}
         fill="none"
         strokeWidth="4"
         stroke="black"
@@ -279,6 +282,14 @@ const updateNodes = (nodes: NodeState[], node: NodeState, index: number) => {
   return xs;
 };
 
+const Toolbar = () => {
+  return (
+    <div className="toolbar">
+      <LinkIcon fontSize="large" />
+    </div>
+  );
+};
+
 const App = () => {
   const ref = React.useRef(null);
   const [state, setState] = React.useState(initialState);
@@ -289,32 +300,35 @@ const App = () => {
   }, []);
 
   return (
-    <div
-      onMouseMove={(e) => onDragArea(e, state, setState)}
-      onWheel={(e) => onZoom(e, state, setState)}
-      className="ws"
-      ref={ref}
-      style={{ width: "100%", height: "100%" }}
-    >
-      <div className="pane">
-        {state.nodes.map((it, i) => (
-          <Node
-            key={i}
-            node={it}
-            update={(node: NodeState) =>
-              setState({ ...state, nodes: updateNodes(state.nodes, node, i) })
-            }
-          />
-        ))}
-        {state.links.map((link, i) => (
-          <Link
-            key={i}
-            nodeIn={state.nodes[link.in]}
-            nodeOut={state.nodes[link.out]}
-          />
-        ))}
+    <>
+      <Toolbar />
+      <div
+        onMouseMove={(e) => onDragArea(e, state, setState)}
+        onWheel={(e) => onZoom(e, state, setState)}
+        className="ws"
+        ref={ref}
+        style={{ width: "100%", height: "100%" }}
+      >
+        <div className="pane">
+          {state.nodes.map((it, i) => (
+            <Node
+              key={i}
+              node={it}
+              update={(node: NodeState) =>
+                setState({ ...state, nodes: updateNodes(state.nodes, node, i) })
+              }
+            />
+          ))}
+          {state.links.map((link, i) => (
+            <Link
+              key={i}
+              nodeIn={state.nodes[link.in]}
+              nodeOut={state.nodes[link.out]}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
