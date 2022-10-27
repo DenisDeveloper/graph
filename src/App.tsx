@@ -1,6 +1,9 @@
 import React from "react";
 import PolylineIcon from "@mui/icons-material/Polyline";
 import LinkIcon from "@mui/icons-material/PolylineOutlined";
+import Chip from "@mui/material/Chip";
+import ProcessIcon from "@mui/icons-material/DeveloperBoard";
+import { isTemplateExpression } from "typescript";
 
 type NodeState = {
   uuid: number;
@@ -40,7 +43,6 @@ type Params = {
 const nodes: NodeState[] = [
   { uuid: 1, name: "Node 1", x: 100, y: 100, isDrag: false },
   { uuid: 2, name: "Node 2", x: 300, y: 250, isDrag: false },
-  { uuid: 3, name: "Node 3", x: 150, y: 400, isDrag: false },
 ];
 
 const links: LinkState[] = [{ out: 0, in: 1, isDrag: false }];
@@ -197,6 +199,8 @@ type NodeProps = {
 
 const Node = ({ node, update }: NodeProps) => {
   const ref = React.useRef(null);
+  const width = 100;
+  const height = 100;
 
   React.useEffect(() => {
     if (ref.current) {
@@ -214,6 +218,59 @@ const Node = ({ node, update }: NodeProps) => {
       onMouseDown={(e) => e.button === 0 && update({ ...node, isDrag: true })}
       onMouseUp={() => update({ ...node, isDrag: false })}
       onMouseMove={(e) => onDragNode(e, node, update)}
+    >
+      <div
+        className="socket"
+        style={{ left: `${width - 5}px`, top: `${height / 2 - 5}px` }}
+      ></div>
+      <div
+        className="socket"
+        style={{ left: `${-5}px`, top: `${height / 2 - 5}px` }}
+      ></div>
+    </div>
+  );
+};
+
+type DraftNodeState = {
+  x: number;
+  y: number;
+};
+
+type DraftNodeProps = {
+  node: DraftNodeState;
+};
+
+const onDragDraftNode = (
+  e: React.MouseEvent<HTMLDivElement>,
+  state: DraftNodeState,
+  update: (state: DraftNodeState) => void
+) => {
+  e.preventDefault();
+  e.stopPropagation();
+  update({
+    ...state,
+    x: Math.abs(e.clientX - 50),
+    y: Math.abs(e.clientY - 50),
+  });
+};
+
+const DraftNode = ({ node }: DraftNodeProps) => {
+  const ref = React.useRef(null);
+  const width = 100;
+  const height = 100;
+
+  React.useEffect(() => {
+    if (ref.current) {
+    }
+  }, []);
+
+  return (
+    <div
+      className="draft-node"
+      style={{
+        transform: `translate(${node.x}px, ${node.y}px)`,
+        cursor: "none",
+      }}
     ></div>
   );
 };
@@ -246,7 +303,7 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
       width={svg.width}
       height={svg.height}
     >
-      <path
+      {/* <path
         // d="M 0,4 L 50 4 L 50 146 L 100 146"
         d={`M 0,4 L ${svg.width * 0.2} 4 L ${svg.width * 0.8} ${svg.height} L ${
           svg.width
@@ -254,14 +311,14 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
         fill="none"
         strokeWidth="2"
         stroke="blue"
-      />
+      /> */}
       <path
         // d="M 0,0 Q 50 0, 50 75"
         d={`M 0,0 Q ${svg.width / 2} 0, ${svg.width / 2} ${svg.height / 2}`}
         // d={`M 0,0 Q ${svg.width * 0.2} 0, ${svg.width * 0.8} ${svg.height / 2}`}
         fill="none"
-        strokeWidth="4"
-        stroke="black"
+        strokeWidth="2"
+        stroke="blue"
       />
       <path
         // d="M 50,75 Q 50 150, 100 150"
@@ -269,8 +326,8 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
           svg.height
         }, ${svg.width} ${svg.height}`}
         fill="none"
-        strokeWidth="4"
-        stroke="black"
+        strokeWidth="2"
+        stroke="blue"
       />
     </svg>
   );
@@ -282,10 +339,40 @@ const updateNodes = (nodes: NodeState[], node: NodeState, index: number) => {
   return xs;
 };
 
-const Toolbar = () => {
+type ToolbarItem = {
+  title: string;
+  selected: boolean;
+  icon: JSX.Element;
+};
+
+const toolbarItems: ToolbarItem[] = [
+  { title: "link", selected: false, icon: <LinkIcon fontSize="small" /> },
+  { title: "process", selected: false, icon: <ProcessIcon fontSize="small" /> },
+];
+
+type ToolbarProps = {
+  items: ToolbarItem[];
+  onSelect: (item: ToolbarItem) => void;
+};
+
+type ToolbarState = {
+  items: ToolbarItem[];
+  selected: string;
+};
+
+const Toolbar = ({ onSelect, items }: ToolbarProps) => {
   return (
     <div className="toolbar">
-      <LinkIcon fontSize="large" />
+      {items.map((it) => (
+        <Chip
+          key={it.title}
+          label={it.title}
+          onClick={() => onSelect(it)}
+          sx={{ marginRight: "10px" }}
+          variant={it.selected ? "filled" : "outlined"}
+          icon={it.icon}
+        />
+      ))}
     </div>
   );
 };
@@ -293,23 +380,82 @@ const Toolbar = () => {
 const App = () => {
   const ref = React.useRef(null);
   const [state, setState] = React.useState(initialState);
+  const [draftNode, setDraftNode] = React.useState<DraftNodeState>({
+    x: -400,
+    y: -400,
+  });
 
-  React.useEffect(() => {
-    if (ref.current) {
-    }
-  }, []);
+  const [toolbarState, setToolbarState] = React.useState<ToolbarState>({
+    items: toolbarItems,
+    selected: "",
+  });
+
+  // React.useEffect(() => {
+  //   if (ref.current) {
+  //   }
+  // }, []);
 
   return (
     <>
-      <Toolbar />
+      <Toolbar
+        items={toolbarState.items}
+        onSelect={(tool) =>
+          setToolbarState({
+            ...toolbarState,
+            selected: !tool.selected ? tool.title : "",
+            items: toolbarState.items.map((item) => ({
+              ...item,
+              selected: item.title === tool.title && !item.selected,
+            })),
+          })
+        }
+      />
       <div
-        onMouseMove={(e) => onDragArea(e, state, setState)}
+        onMouseMove={(e) => {
+          switch (toolbarState.selected) {
+            case "process":
+              onDragDraftNode(e, draftNode, (node) => setDraftNode(node));
+              break;
+            case "link":
+              console.log("link");
+              break;
+            default:
+              onDragArea(e, state, setState);
+          }
+        }}
+        onMouseDown={() => {
+          switch (toolbarState.selected) {
+            case "process":
+              setState({
+                ...state,
+                nodes: [
+                  ...state.nodes,
+                  {
+                    uuid: 1,
+                    name: "Node 1",
+                    x: draftNode.x,
+                    y: draftNode.y,
+                    isDrag: false,
+                  },
+                ],
+              });
+              break;
+            case "link":
+              console.log("link");
+              break;
+            default:
+              console.log("default");
+          }
+        }}
         onWheel={(e) => onZoom(e, state, setState)}
         className="ws"
         ref={ref}
         style={{ width: "100%", height: "100%" }}
       >
         <div className="pane">
+          {toolbarState.selected === "process" && (
+            <DraftNode node={draftNode} />
+          )}
           {state.nodes.map((it, i) => (
             <Node
               key={i}

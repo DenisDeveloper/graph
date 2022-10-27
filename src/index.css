@@ -46,11 +46,35 @@ body,
   left: 0;
   background-color: #fafafa;
   border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
 }
 
 .node {
   position: absolute;
   width: 100px;
   height: 100px;
+  /* background-color: gray; */
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
+.draft-node {
+  z-index: 300;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  /* background-color: gray; */
+  background-color: rgba(200, 200, 200, 0.4);
+  border: 1px gray;
+  border-style: dashed;
+}
+
+.socket {
+  position: absolute;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
   background-color: gray;
 }
