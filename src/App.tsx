@@ -3,11 +3,17 @@ import PolylineIcon from "@mui/icons-material/Polyline";
 import LinkIcon from "@mui/icons-material/PolylineOutlined";
 import Chip from "@mui/material/Chip";
 import ProcessIcon from "@mui/icons-material/DeveloperBoard";
-import { isTemplateExpression } from "typescript";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+
+import { nodeColors } from "./consts";
 
 type NodeState = {
   uuid: number;
   name: string;
+  type: string;
+  version: string;
   x: number;
   y: number;
   isDrag: boolean;
@@ -41,8 +47,24 @@ type Params = {
 };
 
 const nodes: NodeState[] = [
-  { uuid: 1, name: "Node 1", x: 100, y: 100, isDrag: false },
-  { uuid: 2, name: "Node 2", x: 300, y: 250, isDrag: false },
+  {
+    uuid: 1,
+    name: "автодоставка старт",
+    type: "INNER",
+    version: "1.0.9",
+    x: 100,
+    y: 100,
+    isDrag: false,
+  },
+  {
+    uuid: 2,
+    name: "склады",
+    type: "SERVICE",
+    version: "1.0.2",
+    x: 300,
+    y: 250,
+    isDrag: false,
+  },
 ];
 
 const links: LinkState[] = [{ out: 0, in: 1, isDrag: false }];
@@ -192,6 +214,26 @@ const onDragArea = (
   }
 };
 
+const NodeContent = ({
+  name,
+  version,
+  type,
+}: {
+  name: string;
+  version: string;
+  type: string;
+}) => {
+  const color = nodeColors.find((c) => c.type === type)?.color;
+  const style = { borderLeft: `2px solid ${color}`, background: `${color}2e` };
+  return (
+    <div className="node-content" style={style}>
+      <div className="node-title">{name}</div>
+      <div className="node-version">{version}</div>
+      <div className="node-type">{type}</div>
+    </div>
+  );
+};
+
 type NodeProps = {
   node: NodeState;
   update: (node: NodeState) => void;
@@ -219,14 +261,15 @@ const Node = ({ node, update }: NodeProps) => {
       onMouseUp={() => update({ ...node, isDrag: false })}
       onMouseMove={(e) => onDragNode(e, node, update)}
     >
-      <div
+      <NodeContent name={node.name} version={node.version} type={node.type} />
+      {/* <div
         className="socket"
         style={{ left: `${width - 5}px`, top: `${height / 2 - 5}px` }}
       ></div>
       <div
         className="socket"
         style={{ left: `${-5}px`, top: `${height / 2 - 5}px` }}
-      ></div>
+      ></div> */}
     </div>
   );
 };
@@ -283,9 +326,9 @@ type LinkProps = {
 };
 
 const Link = ({ nodeIn, nodeOut }: LinkProps) => {
-  const nodeOutWidth = 100;
+  const nodeOutWidth = 200;
   const nodeOutHeight = 100;
-  const nodeInWidth = 100;
+  const nodeInWidth = 200;
   const nodeInHeight = 100;
   // prettier-ignore
   const svg = {
@@ -318,7 +361,7 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
         // d={`M 0,0 Q ${svg.width * 0.2} 0, ${svg.width * 0.8} ${svg.height / 2}`}
         fill="none"
         strokeWidth="2"
-        stroke="blue"
+        stroke="gray"
       />
       <path
         // d="M 50,75 Q 50 150, 100 150"
@@ -327,7 +370,7 @@ const Link = ({ nodeIn, nodeOut }: LinkProps) => {
         }, ${svg.width} ${svg.height}`}
         fill="none"
         strokeWidth="2"
-        stroke="blue"
+        stroke="gray"
       />
     </svg>
   );
@@ -432,7 +475,9 @@ const App = () => {
                   ...state.nodes,
                   {
                     uuid: 1,
-                    name: "Node 1",
+                    name: "",
+                    type: "",
+                    version: "1.0.0",
                     x: draftNode.x,
                     y: draftNode.y,
                     isDrag: false,
